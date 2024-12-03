@@ -11,3 +11,8 @@ module Utilities =
     let getData (filePath: string, split: string)
       = (readLines filePath)
       |> Seq.map (fun line -> line.Split split)
+      
+    
+    // printfn $"{(sequence |> Seq.map string |> concat)}"
+    let debugConcat a = "[" + (String.concat ", " a) + "]"
+    let debugToString (a, b) = $"({a},{b})"
