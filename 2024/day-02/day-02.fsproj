@@ -2,14 +2,18 @@
 
     <PropertyGroup>
         <TargetFramework>net8.0</TargetFramework>
-        <RootNamespace>day_01</RootNamespace>
-        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+        <RootNamespace>day_02</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>
-        <None Include="program.fsx" />
-        <Content Include="example.txt" />
-        <Content Include="input.txt" />
+        <ProjectReference Include="..\AdventOfCode\AdventOfCode.fsproj" />
     </ItemGroup>
+
+    <ItemGroup>
+      <None Include="day02.fsx" />
+      <Content Include="example.txt" />
+      <Content Include="input.txt" />
+    </ItemGroup>
+
 
 </Project>

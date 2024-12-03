@@ -1,13 +1,8 @@
-open System.IO
+#load @"../AdventOfCode/Utilities.fs"
 
-let readLines (filePath:string) = seq {
-    use sr = new StreamReader (filePath)
-    while not sr.EndOfStream do
-        yield sr.ReadLine ()
-}
+open AdventOfCode
 
-let data = (readLines "./input.txt")
-           |> Seq.map (fun line -> line.Split "   ")
+let data = Utilities.getData("./day-01/input.txt", "   ")
            |> Seq.map (fun s -> (s[0], s[1]))
            |> Seq.map (fun (a,b) -> (int a, int b))
 
@@ -40,3 +35,5 @@ let similarityScore = list0
 
 let result2 = Seq.sum similarityScore;
 printfn $"Result 2: {result2}"
+
+exit 0

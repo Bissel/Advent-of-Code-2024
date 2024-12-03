@@ -1,14 +1,9 @@
-open System.IO
+#load @"../AdventOfCode/Utilities.fs"
 
-let readLines (filePath:string) = seq {
-    use sr = new StreamReader (filePath)
-    while not sr.EndOfStream do
-        yield sr.ReadLine ()
-}
+open AdventOfCode
 
-let data = (readLines "./input.txt")
-           |> Seq.map (fun line -> line.Split " ")
-           |> Seq.map (Array.map int);
+let data = Utilities.getData("./day-02/input.txt", " ")
+         |> Seq.map (Array.map int)
 
 // The engineers are trying to figure out which reports are safe.
 // The Red-Nosed reactor safety systems can only tolerate levels that are either gradually increasing
@@ -57,3 +52,5 @@ let moreTolerateLevels = data |> Seq.map checkAllPermutations
 
 let result2 = moreTolerateLevels |> Seq.map (fun a -> if a then 1 else 0) |> Seq.sum
 printfn $"Result 2: {result2}"
+
+exit 0
