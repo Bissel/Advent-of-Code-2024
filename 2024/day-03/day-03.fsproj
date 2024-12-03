@@ -1,0 +1,14 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <RootNamespace>day_03</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <None Include="day-03.fsx" />
+      <Content Include="example.txt" />
+      <Content Include="input.txt" />
+    </ItemGroup>
+
+</Project>
