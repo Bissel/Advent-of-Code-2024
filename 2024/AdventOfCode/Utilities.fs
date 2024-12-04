@@ -16,3 +16,4 @@ module Utilities =
     // printfn $"{(sequence |> Seq.map string |> concat)}"
     let debugConcat a = "[" + (String.concat ", " a) + "]"
     let debugToString (a, b) = $"({a},{b})"
+    let debugToStringT (a, b, c) = $"({a},{b},{c})"
