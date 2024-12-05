@@ -2,6 +2,15 @@
 
 open AdventOfCode
 
+module Seq =
+    let splitBy (condition: _ -> bool) (input: _ seq) =
+        input
+          |> Seq.map (fun a -> (condition a, a))
+          |> Seq.groupBy fst
+          |> Seq.map (fun (_, b) -> Seq.map snd b)
+          |> Seq.toArray
+          |> fun s -> (s[0], s[1])
+
 let data = Utilities.readLines("./day-05/input.txt")
            |> Seq.toArray
 
@@ -25,56 +34,91 @@ let rec getMiddleNumber (numbers: int list) =
       | [m] -> m
       | [m; _]  -> m
       | _ :: tail -> getMiddleNumber ( List.rev (List.tail (List.rev tail)) )
-      
+
+let getResult update = update |> Seq.map getMiddleNumber |> Seq.sum
       
 let getRulesForUpdate (update: int seq) = rules |> Seq.where  (fun (a,b) -> Seq.contains a update && Seq.contains b update)
-
 let getNextRules (page: int) (rulesForUpdate: (int*int) seq) = rulesForUpdate |> Seq.where (fun (p,_) -> p = page) |> Seq.map snd
 let getPrevRules (page: int) (rulesForUpdate: (int*int) seq) = rulesForUpdate |> Seq.where (fun (_,p) -> p = page) |> Seq.map fst
 
-let isPageCorrect (page: int) (rulesForUpdate: (int*int) seq) (prevPages: int list) (nextPages: int list) =
+let isPageCorrect (page: int) (rulesForUpdate: (int*int) seq) (nextPages: int list) =
+    let nextRules = getNextRules page rulesForUpdate
+    
+    let next = if Seq.length nextRules > 0
+                   then Seq.forall (fun rule -> Seq.contains rule nextPages) nextRules
+                   else true
+                   
+    next
+    
+let isPageCorrectWithPrev (page: int) (rulesForUpdate: (int*int) seq) (nextPages: int list) =
     let prevRules = getPrevRules page rulesForUpdate
     let nextRules = getNextRules page rulesForUpdate
     
     let prev = if Seq.length prevRules > 0
-                   then prevRules |> Seq.forall (fun rule -> Seq.contains rule prevPages) 
+                   then not (Seq.exists (fun rule -> Seq.contains rule nextPages) prevRules)
                    else true
                    
     let next = if Seq.length nextRules > 0
-                   then nextRules |> Seq.forall (fun rule -> Seq.contains rule nextPages) 
+                   then Seq.forall (fun rule -> Seq.contains rule nextPages) nextRules
                    else true
                    
     prev && next 
 
 let isUpdateCorrect (update: int list) =
     let rulesForUpdate = getRulesForUpdate update
-    let rec _isUpdateCorrect (update: int list) (headList: int list)
+    // printfn $"update: {update |> Seq.map string |> Utilities.debugConcat}"
+    // printfn $"rulesForUpdate: {rulesForUpdate |> Seq.map Utilities.debugToString |> Utilities.debugConcat}"
+    // printfn ""
+    let rec _isUpdateCorrect (update: int list)
         = match update with
             | [] -> true
-            | head :: tail -> if isPageCorrect head rulesForUpdate headList tail 
-                                then _isUpdateCorrect tail (List.concat [headList; [head]])
+            | head :: tail -> if isPageCorrect head rulesForUpdate tail 
+                                then _isUpdateCorrect tail
                                 else false
                                 
-    _isUpdateCorrect update []
+    _isUpdateCorrect update
                             
-let correctUpdates = updates |> Seq.where isUpdateCorrect
+let correctUpdates, incorrectUpdates = updates |> Seq.splitBy isUpdateCorrect
 
-let c = correctUpdates |> Seq.map (fun a -> Seq.map string a |> Utilities.debugConcat)
-
-let result1 = correctUpdates
-              |> Seq.map getMiddleNumber
-              |> Seq.sum
+let result1 = getResult correctUpdates
+              
 
 printfn $"Result 1: {result1}"
 
 // -------------------------------------------------- //
 
-let incorrectUpdates = updates |> Seq.where (fun a -> not (isUpdateCorrect a))
+let correctUpdate (update: int list) =
+    let rulesForUpdate = getRulesForUpdate update
+    
+    // printfn $"update: {update |> Seq.map string |> Utilities.debugConcat}"
+    // printfn $"rulesForUpdate: {rulesForUpdate |> Seq.map Utilities.debugToString |> Utilities.debugConcat}"
+    
+    let rec _movePage (prevRules: int seq) (page: int) (tail: int list) =
+        match tail with
+            | [] -> [page]
+            | nextPage :: other -> if Seq.exists (fun rule -> Seq.contains rule tail) prevRules
+                                    then (nextPage :: (_movePage prevRules page other))
+                                    else (page :: nextPage :: other)
+    
+    let _correctPage (page: int) (tail: int list) =
+        let prevRules = getPrevRules page rulesForUpdate
+        _movePage prevRules page tail
+    
+    let rec _correctUpdate (update: int list) =
+        match update with
+            | [] -> []
+            | [a] -> [a]
+            | page :: tail -> if (isPageCorrectWithPrev page rulesForUpdate tail)
+                                then (page :: (_correctUpdate tail) )
+                                else (_correctUpdate (_correctPage page tail))
+                
+    _correctUpdate update
 
 
+let corrected = incorrectUpdates
+                |> Seq.map correctUpdate
 
-
-let result2 = "-"
+let result2 = getResult corrected
 printfn $"Result 2: {result2}"
 
 exit 0
