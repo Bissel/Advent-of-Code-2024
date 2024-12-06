@@ -25,3 +25,9 @@ module Utilities =
     let debugConcat a = "[" + (String.concat ", " a) + "]"
     let debugToString (a, b) = $"({a},{b})"
     let debugToStringT (a, b, c) = $"({a},{b},{c})"
+    
+    let debugMatrix (matrix: (int*int*char) seq) =
+        matrix
+                   |> Seq.groupBy (fun (_,y,_) -> y)
+                   |> Seq.map (fun (_,row) -> row |> Seq.map (fun (_,_,c) -> string c) |> (String.concat "") )
+                   |> String.concat "\n"
