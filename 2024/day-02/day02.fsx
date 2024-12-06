@@ -2,7 +2,7 @@
 
 open AdventOfCode
 
-let data = Utilities.getData("./day-02/input.txt", " ")
+let data = Utilities.getData "./day-02/input.txt" " "
          |> Seq.map (Array.map int)
 
 // The engineers are trying to figure out which reports are safe.
@@ -18,15 +18,15 @@ let pairIncreasing (a, b) = a < b
 let pairDecreasing (a, b) = a > b
 let pairDifferSave (a, b) = between 1 3 (abs (a - b))
 
-let checkPairwise (compare: int * int -> bool, levels: int array)
+let checkPairwise (compare: int * int -> bool) (levels: int array)
   = levels
   |> Array.pairwise
   |> Array.map compare
   |> Array.reduce (fun a b -> a && b)
 
 let isSave (levels: int array)
-  = (checkPairwise(pairIncreasing, levels) || checkPairwise(pairDecreasing, levels))
-  && checkPairwise(pairDifferSave, levels)
+  = ((checkPairwise pairIncreasing levels) || (checkPairwise pairDecreasing levels))
+  && (checkPairwise pairDifferSave levels)
 
 let tolerateLevels = data |> Seq.map isSave
 

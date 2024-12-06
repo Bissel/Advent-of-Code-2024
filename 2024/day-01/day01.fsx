@@ -2,7 +2,7 @@
 
 open AdventOfCode
 
-let data = Utilities.getData("./day-01/input.txt", "   ")
+let data = Utilities.getData "./day-01/input.txt" "   "
            |> Seq.map (fun s -> (s[0], s[1]))
            |> Seq.map (fun (a,b) -> (int a, int b))
 

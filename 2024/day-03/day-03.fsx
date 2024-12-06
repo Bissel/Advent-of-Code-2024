@@ -3,14 +3,14 @@
 open System.Text.RegularExpressions
 open AdventOfCode
 
-let data = Utilities.readLines("./day-03/input.txt")
+let data = Utilities.readLines "./day-03/input.txt"
          |> (String.concat "")
 
 // However, because the program's memory has been corrupted, there are also many invalid characters that
 // should be ignored, even if they look like part of a mul instruction. Sequences like
 // mul(4*, mul(6,9!, ?(12,34), or mul ( 2 , 4 ) do nothing.
 
-let findIndices (content: string, pattern: string) =
+let findIndices (content: string) (pattern: string) =
     seq {
         for m in Regex.Matches(content, pattern) do
             yield m.Index
@@ -45,8 +45,8 @@ printfn $"Result 1: {result1}"
 // Only the most recent do() or don't() instruction applies.
 // At the beginning of the program, mul instructions are enabled.
 
-let doIndices = Seq.append [0] (findIndices (data, "do\(\)"))
-let dontIndices = Seq.append (findIndices (data, "don't\(\)")) [data.Length]
+let doIndices = Seq.append [0] (findIndices data "do\(\)")
+let dontIndices = Seq.append (findIndices data "don't\(\)") [data.Length]
 
 let enabled =
     seq {

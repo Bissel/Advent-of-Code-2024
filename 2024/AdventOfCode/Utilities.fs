@@ -8,9 +8,17 @@ module Utilities =
             yield sr.ReadLine ()
     }
 
-    let getData (filePath: string, split: string)
+    let getData (filePath: string) (split: string)
       = (readLines filePath)
       |> Seq.map (fun line -> line.Split split)
+      
+    let toMatrix (rows: string seq) = 
+        rows
+        |> Seq.map Seq.indexed
+        |> Seq.indexed
+        |> Seq.map (fun (y, list) -> list |> Seq.map (fun (x, c) -> (x,y,c)) )
+        |> Seq.concat
+        |> Seq.toList
       
     
     // printfn $"{(sequence |> Seq.map string |> concat)}"

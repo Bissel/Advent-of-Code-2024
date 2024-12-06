@@ -77,13 +77,7 @@ let group3x3 (rows: string seq) = seq {
     let width = rows |> Seq.head |> _.Length
     let height = rows |> Seq.toList |> _.Length
     
-    let matrix =
-        rows
-        |> Seq.map Seq.indexed
-        |> Seq.indexed
-        |> Seq.map (fun (y, list) -> list |> Seq.map (fun (x, c) -> (x,y,c)) )
-        |> Seq.concat
-        |> Seq.toList
+    let matrix = Utilities.toMatrix rows
         
     let inRange X Y (x,y,_) =
            (x = X || (x - 1) = X || (x + 1) = X)
