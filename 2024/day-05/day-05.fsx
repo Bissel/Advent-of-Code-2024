@@ -2,15 +2,6 @@
 
 open AdventOfCode
 
-module Seq =
-    let splitBy (condition: _ -> bool) (input: _ seq) =
-        input
-          |> Seq.map (fun a -> (condition a, a))
-          |> Seq.groupBy fst
-          |> Seq.map (fun (_, b) -> Seq.map snd b)
-          |> Seq.toArray
-          |> fun s -> (s[0], s[1])
-
 let data = Utilities.readLines("./day-05/input.txt")
            |> Seq.toArray
 

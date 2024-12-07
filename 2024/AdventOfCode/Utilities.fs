@@ -31,3 +31,12 @@ module Utilities =
                    |> Seq.groupBy (fun (_,y,_) -> y)
                    |> Seq.map (fun (_,row) -> row |> Seq.map (fun (_,_,c) -> string c) |> (String.concat "") )
                    |> String.concat "\n"
+
+module Seq =
+    let splitBy (condition: _ -> bool) (input: _ seq) =
+        input
+          |> Seq.map (fun a -> (condition a, a))
+          |> Seq.groupBy fst
+          |> Seq.map (fun (_, b) -> Seq.map snd b)
+          |> Seq.toArray
+          |> fun s -> (s[0], s[1])
