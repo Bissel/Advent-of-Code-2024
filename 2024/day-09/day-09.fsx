@@ -29,10 +29,15 @@ module Disc =
                 $"({text}, {length})"
             )
             |> String.concat ""
+            
+    let _rev (data: Disc) = data |> Seq.rev |> Seq.toList
     
-    let defragment (disc: Disc): Disc =
-        let _rev (data: Disc) = data |> Seq.rev |> Seq.toList
+    let hightestId (disc: Disc): Id = disc |> List.map fst |> List.where ((<>) -1) |> List.last
+    
+    let blockIndex (id: Id) (disc: Disc) =
+        disc |> Seq.findIndex (fun (_id, _) -> id = _id)
         
+    let defragment (disc: Disc): Disc =
         let rec _setEmptySpaceRev (emptyLen: Length) (revData: Disc): Disc =
             if emptyLen <= 0 then
                 revData
@@ -51,29 +56,6 @@ module Disc =
                         else            
                             List.append (_setEmptySpaceRev (emptyLen - blockLen) tail) [(id, blockLen)]
         
-        // let rec _setEmptySpace (emptyLen: Length) (data: Disc): Disc =
-        //     if emptyLen <= 0 || data.Length <= 1 then
-        //         data
-        //     else
-        //         let id, blockLen = List.last data
-        //         
-        //         if id = -1 then
-        //             List.append (_setEmptySpace emptyLen (List.truncate (data.Length - 1) data) ) [(-1, blockLen)]
-        //         else
-        //             
-        //         
-        //         match revData with
-        //             | [] -> []
-        //             | [(-1, _)] -> []
-        //             | [(id, length)] -> [(id, length)]
-        //             | (id, blockLen) :: tail ->
-        //                 if emptyLen = blockLen then
-        //                     List.append tail [(id, blockLen)]
-        //                 else if emptyLen < blockLen then
-        //                     (id, blockLen - emptyLen) :: (List.append tail [(id, emptyLen)])  
-        //                 else            
-        //                     List.append (_setEmptySpace (emptyLen - blockLen) tail) [(id, blockLen)]
-        
         let rec _defrag (data: Disc) =
             match data with
                 | [] -> []
@@ -84,19 +66,58 @@ module Disc =
                 | block :: tail -> block :: _defrag tail
         
         _defrag disc
+    
+        
+    let defragment2 (disc: Disc) =
+        let startId = (hightestId disc)
+        
+        let rec _move (id: Id) (data: Disc) =
+            let index = blockIndex id data
+            let length = snd data[index]
+            
+            let emptyBlockIndex = data |> List.tryFindIndex (fun (_id, len) -> _id = -1 && len >= length)
+            
+            if emptyBlockIndex.IsNone || emptyBlockIndex.Value > index then
+                data
+            else
+                let emptyBlock = data[emptyBlockIndex.Value]
+                let emptyBlockLength = snd emptyBlock
+                
+                let ab, c = List.splitAt index data |> fun (a,b) -> (a, List.tail b)
+                let a, b =  List.splitAt emptyBlockIndex.Value ab |> fun (a,b) -> (a, List.tail b)
+                
+                let replacement =
+                    if emptyBlockLength = length then
+                        [(id, length)]
+                    else
+                        [(id, length); (-1, emptyBlockLength - length)]
+                               
+                List.concat [a; replacement; b; [(-1, length)]; c]
+        
+        let rec _defrag (id: Id) (data: Disc) =
+            if id <= 0 then
+                data
+            else
+                if id % 25 = 0 then
+                    printfn $"{startId - id}"
+                _defrag (id - 1) (_move id data)
+        
+        _defrag startId disc
         
     let checksum (disc: Disc) =
         disc
-        |> Seq.where (fun t -> (<>) -1 (fst t))
         |> fun s -> ((uint64 0, 0), s) ||> Seq.fold (fun col (id, len)  ->
-            let _id = uint64 id
+            let _id = uint64 (if id < 0 then 0 else id)
             let _offset = uint64 (snd col)
             let sum = [0 .. (len - 1)]
-                      |> Seq.map uint64
-                      |> Seq.map (fun i -> _id * (_offset + i))
-                      |> Seq.sum
+                          |> Seq.map uint64
+                          |> Seq.map (fun i -> _id * (_offset + i))
+                          |> Seq.sum
                       
-            ( (fst col) + sum, (snd col) + len )
+            (
+                (fst col) + (if id = -1 then uint64 0 else sum),
+                (snd col) + len
+            )
         )
         |> fst
 
@@ -108,20 +129,22 @@ let disc =
     |> Seq.toList
     |> Disc.fromData 0
     
-// printfn $"{disc |> Disc.toRawString}"
 printfn $"{disc |> Disc.toString}"
 
-let defragmented = disc |> Disc.defragment 
+// let defragmented = disc |> Disc.defragment 
+//
+// printfn $"{defragmented |> Disc.toString}"
 
-printfn $"{defragmented |> Disc.toString}"
-
-let result1 = Disc.checksum defragmented
+let result1 = "6378826667552" // Disc.checksum defragmented
 
 printfn $"Result 1: {result1}"
 
 // -------------------------------------------------- //
 
-let result2 = "-"
+let defragmented2 = disc |> Disc.defragment2
+
+printfn $"{defragmented2 |> Disc.toString}"
+let result2 = Disc.checksum defragmented2
 printfn $"Result 2: {result2}"
 
 exit 0
