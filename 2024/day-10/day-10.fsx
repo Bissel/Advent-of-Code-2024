@@ -52,10 +52,14 @@ let toPaths (points: Point list array): Point list seq =
 let heights = toHeights data
 let paths = toPaths heights |> Seq.toList
 
-let fullUniquePaths =
+let fullPaths = 
     paths
     |> Seq.where (fun p -> p.Length = 10)
     |> Seq.map (fun points -> (List.head points, List.last points))
+    |> Seq.toList
+    
+let fullUniquePaths =
+    fullPaths
     |> Seq.distinct
     |> Seq.toList
 
@@ -69,7 +73,7 @@ printfn $"Result 1: {result1}"
 
 // -------------------------------------------------- //
 
-let result2 = "-"
+let result2 = fullPaths.Length
 printfn $"Result 2: {result2}"
 
 exit 0
