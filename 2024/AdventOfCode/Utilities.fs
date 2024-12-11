@@ -33,6 +33,9 @@ module Utilities =
                    |> String.concat "\n"
 
 module Seq =
+    
+    let tap f (s: _ seq) = Seq.map (fun a -> (f a); a ) s
+    
     let splitBy (condition: _ -> bool) (input: _ seq) =
         input
           |> Seq.map (fun a -> (condition a, a))
