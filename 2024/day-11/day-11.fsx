@@ -46,8 +46,6 @@ module Stone =
     let hasEvenNumberOfDigits (stone: uint64): bool =
         (log10 stone) |> int |> (%) 2 |> (=) 0
         
-        // stone |> string |> _.Length |> (%) 2 |> (=) 0
-        
     // As you observe them for a while, you find that the stones have a consistent behavior. Every time you blink, the stones each simultaneously change according to the first applicable rule in this list:
 
     // If the stone is engraved with the number 0,
@@ -79,9 +77,6 @@ module Stone =
         //     | s -> [(s * (uint64 2024))]
 
 let rec applyRules (steps: int) (stones: Stone list): Stone list =
-    // if steps % 5 = 0 then
-    //     printfn $"{steps}: {stones.Length}"
-    // printfn $"{steps} {stones |> Seq.map string |> Utilities.debugConcat}"
     if steps = 0 then
         stones
     else
@@ -101,17 +96,11 @@ printfn $"Result 1: {result1}"
 
 // -------------------------------------------------- //
 
-// let cache50 = Dictionary<Stone, uint64>()
-// let cache25 = Dictionary<Stone, uint64>()
-
 let maxStep = 75
 let cacheSize = uint64 10000
 let mutable cache = Array2D.init maxStep (int cacheSize) (fun _ _ -> uint64 0)    
   
 let rec applyRules2 (steps: int) (stone: Stone): uint64 =
-    // if steps % 5 = 0 then
-    //     printfn $"{steps}: {stones.Length}"
-    // printfn $"{steps} {stones |> Seq.map string |> Utilities.debugConcat}"
     if steps = 0 then
         uint64 1
     else
@@ -124,8 +113,6 @@ let rec applyRules2 (steps: int) (stone: Stone): uint64 =
             else
                 let res = Stone.applyRules stone |> Seq.map (applyRules2 (steps - 1)) |> Seq.sum
                 cache[steps - 1, (int stone)] <- res
-                // if steps % 10 = 0 && stone = (uint64 0) then
-                //     printfn $"[{steps}][{stone}] = {res}"
                 res
                
 let time2, afterBlinking75 = withTiming (fun a -> Seq.map (applyRules2 maxStep) a |> Seq.toList) data
@@ -135,4 +122,4 @@ printfn $"{time2}"
 let result2 = Seq.sum afterBlinking75
 printfn $"Result 2: {result2}"
 
-// exit 0
+exit 0
