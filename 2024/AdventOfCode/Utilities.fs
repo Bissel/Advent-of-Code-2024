@@ -35,6 +35,7 @@ module Utilities =
 module Seq =
     
     let tap f (s: _ seq) = Seq.map (fun a -> (f a); a ) s
+    let tapi f (s: _ seq) = Seq.mapi (fun i a -> (f i a); a ) s
     
     let splitBy (condition: _ -> bool) (input: _ seq) =
         input
