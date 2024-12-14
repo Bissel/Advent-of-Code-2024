@@ -10,6 +10,9 @@ module Vector =
     let add (a: Vector) (b: Vector) : Vector =
         (fst a + fst b, snd a + snd b)
         
+    let sub (a: Vector) (b: Vector): Vector =
+        (fst a - fst b, snd a - snd b)
+        
     let addi (a: Vector) (b: int) : Vector =
         (fst a + b, snd a + b)
         
@@ -18,6 +21,18 @@ module Vector =
             (0,0)
         else
             (fst a / fst b, snd a / snd b)
+            
+    let allowedChars = "-0123456789,"
+    let fromString (s: string) : Vector =
+                   s
+                   |> Seq.where (fun c -> allowedChars |> Seq.exists ((=)c) )
+                   |> Seq.map string
+                   |> String.concat ""
+                   |> fun (a: System.String) -> a.Split ","
+                   |> fun split -> (
+                        split[0] |> int,
+                        split[1] |> int
+                    )
 
 module Vector64 = 
     let scale (factor: int64) (v: Vector64) : Vector64 =
@@ -34,3 +49,15 @@ module Vector64 =
             (0,0)
         else
             (fst a / fst b, snd a / snd b)
+            
+    let allowedChars = "-0123456789,"
+    let fromString (s: string): Vector64 =
+           s
+           |> Seq.where (fun c -> allowedChars |> Seq.exists ((=)c) )
+           |> Seq.map string
+           |> String.concat ""
+           |> fun (a: System.String) -> a.Split ","
+           |> fun split -> (
+                split[0] |> int64,
+                split[1] |> int64
+            )
