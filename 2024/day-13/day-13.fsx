@@ -1,35 +1,19 @@
 #load @"../AdventOfCode/Utilities.fs"
+#load @"../AdventOfCode/Vector.fs"
 
-open System.Drawing
 open AdventOfCode
 
 type Point = int64*int64
-type Vector = int64*int64
 
-module Vector =
-    let scale (factor: int64) (v: Vector) : Vector =
-        (fst v * factor, snd v * factor)
-        
-    let add (a: Vector) (b: Vector) : Vector =
-        (fst a + fst b, snd a + snd b)
-        
-    let addi (a: Vector) (b: int64) : Vector =
-        (fst a + b, snd a + b)
-        
-    let div (a: Vector) (b: Vector) : Vector =
-        if fst b = 0 || snd b = 0 then
-            (0,0)
-        else
-            (fst a / fst b, snd a / snd b)
-            
-    let min (v: Vector) = min (fst v) (snd v)
-    let max (v: Vector) = max (fst v) (snd v)
+module Vector64 = 
+    let min (v: Vector64) = min (fst v) (snd v)
+    let max (v: Vector64) = max (fst v) (snd v)
     
     
 // Button A Press
 // Button B Press
 // Prize
-type SlotMachine = Vector*Vector*Point
+type SlotMachine = Vector64*Vector64*Point
 
 module SlotMachine =
     let toString ((a,b,p): SlotMachine) =
@@ -38,8 +22,8 @@ module SlotMachine =
 let costA = int64 3
 let costB = int64 1
 
-let buttonA ((a,_,_) : SlotMachine) : Vector = a
-let buttonB ((_,b,_) : SlotMachine) : Vector = b
+let buttonA ((a,_,_) : SlotMachine) : Vector64 = a
+let buttonB ((_,b,_) : SlotMachine) : Vector64 = b
 let prize ((_,_,p) : SlotMachine) : Point = p
 
 let rec dataToSlotMachine (lines : string list) : SlotMachine list =
@@ -74,7 +58,7 @@ let data =
 let price (buttonAPresses: int64, buttonBPresses: int64) =
     buttonAPresses * costA + buttonBPresses * costB
 
-let getComposition (a: Vector, b: Vector, p: Point): (int64*int64) option =
+let getComposition (a: Vector64, b: Vector64, p: Point): (int64*int64) option =
     let axisCombination (sel: int64*int64 -> int64) = seq {
         let xp = sel p
         let xa = sel a
@@ -108,7 +92,7 @@ let rec f (n: int64) x a =
         f n (x + (int64 1)) a
 let factorise (n: int64) = f n (int64 2) []   
 
-let getComposition2 (a: Vector, b: Vector, p: Point): (int64*int64) option =
+let getComposition2 (a: Vector64, b: Vector64, p: Point): (int64*int64) option =
     let axisCombination = seq {
         let xp0 = fst p
         let xp1 = snd p
@@ -152,7 +136,7 @@ printfn $"Result 1: {result1}"
 let addToPrize = int64 "10000000000000"
 
 
-let getComposition3 (a: Vector, b: Vector, p: Point): (int64*int64) option =
+let getComposition3 (a: Vector64, b: Vector64, p: Point): (int64*int64) option =
     // let axisCombination = seq {
     let p0 = fst p
     let p1 = snd p
@@ -174,9 +158,9 @@ let getComposition3 (a: Vector, b: Vector, p: Point): (int64*int64) option =
                 |> Seq.where (fun (f0, f1) -> f0 = f1)
                 |> Seq.map fst
         
-    s |> Seq.map (fun scale -> (scale, getComposition2 (a, b, Vector.div p (scale,scale))) )
+    s |> Seq.map (fun scale -> (scale, getComposition2 (a, b, Vector64.div p (scale,scale))) )
       |> Seq.where (fun (_, v) -> v.IsSome)
-      |> Seq.map (fun (s,v) -> Vector.scale s v.Value)
+      |> Seq.map (fun (s,v) -> Vector64.scale s v.Value)
       |> Seq.tryHead
     //     |> Seq.where (fun (p0, p1) ->
     //         p0 % a0 = 0 && p0 % b0 = 0 &&
@@ -196,7 +180,7 @@ let getComposition3 (a: Vector, b: Vector, p: Point): (int64*int64) option =
     // axisCombination
     //     |> Seq.tryHead  
 
-let getSubComposition (a: Vector, b: Vector, p: Point): (int64*int64) option =
+let getSubComposition (a: Vector64, b: Vector64, p: Point): (int64*int64) option =
     // let baseCompositions = [|
     //     int64 "1000",
     //     int64 "10000",
@@ -217,7 +201,7 @@ let getSubComposition (a: Vector, b: Vector, p: Point): (int64*int64) option =
 
 let compositions2 =
     data
-    |> Seq.map (fun (a,b,p) -> (a,b, Vector.addi p addToPrize))
+    |> Seq.map (fun (a,b,p) -> (a,b, Vector64.addi p addToPrize))
     |> Seq.map getSubComposition
     |> Seq.tapi (fun i c ->
         printfn $"{i}: {if c.IsNone then (int64 -1, int64 -1) else c.Value }"    
