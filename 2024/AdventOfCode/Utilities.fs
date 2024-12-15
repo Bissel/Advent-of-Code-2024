@@ -1,5 +1,7 @@
 ﻿namespace AdventOfCode
 
+open System
+
 module Utilities =
     
     let readLines (filePath:string) = seq {
@@ -44,3 +46,12 @@ module Seq =
           |> Seq.map (fun (_, b) -> Seq.map snd b)
           |> Seq.toArray
           |> fun s -> (s[0], s[1])
+          
+module EnumUtil =
+
+    /// Return all values for an enumeration type
+    let EnumValues<'a> (enumType : Type) : 'a list =
+        let values = Enum.GetValues enumType
+        let lb = values.GetLowerBound 0
+        let ub = values.GetUpperBound 0
+        [lb .. ub] |> List.map (fun i -> values.GetValue i :?> 'a) 
