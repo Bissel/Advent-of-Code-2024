@@ -5,8 +5,8 @@ open AdventOfCode
 
 module Input =
     // input-file * (width * height)
-    // let input = ("example", (11, 7))
-    let input = ("input", (101, 103))
+    let input = ("input", (11, 7))
+    // let input = ("input", (101, 103))
     
     let file = fst input
     let width = fst (snd input)
@@ -140,7 +140,42 @@ printfn $"Result 1: {result1}"
 
 // -------------------------------------------------- //
 
-let result2 = "-"
+let findTree (maxSteps: uint) (area: Area): (int64*Area option) =
+    let midPointX = Area.w area / 2 - 1
+    let midPointY = Area.h area / 2 - 1
+    
+    let rec _findTree (steps: uint) (area: Area) = 
+        if steps = (uint 0) then
+            ((int64 -1), None)
+        else
+            if (int steps) % 100_000 = 0 then
+                printfn $"{maxSteps - steps}"
+            let robots = Area.robots area
+            let hasPoint point = robots |> List.exists (fun (p,_) -> p = point)
+            if
+                // hasPoint (midPoint, 0) &&
+                hasPoint (midPointX, midPointY - 2) &&
+                hasPoint (midPointX, midPointY - 3) &&
+                hasPoint (midPointX, midPointY - 4) &&
+                hasPoint (midPointX, midPointY - 5) &&
+                hasPoint (midPointX, midPointY - 6) 
+                // hasPoint (midPoint - 1, 1) &&
+                // hasPoint (midPoint + 1, 1) //&&
+                // hasPoint (midPoint, 2) &&
+                // hasPoint (midPoint - 2, 2) &&
+                // hasPoint (midPoint + 2, 2)
+            then
+                printfn $"{Area.toString area}"
+                ((int64 maxSteps) - (int64 steps), Some area)
+            else
+                _findTree (steps - (uint 1)) (Area.nextState area)
+        
+    _findTree maxSteps area
+
+
+let p,_ = findTree (uint 100000000) data
+
+let result2 = p
 printfn $"Result 2: {result2}"
 
 exit 0
