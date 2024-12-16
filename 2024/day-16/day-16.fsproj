@@ -10,6 +10,7 @@
       <None Include="day-16.fsx" />
       <Content Include="input.txt" />
       <Content Include="example.txt" />
+      <Content Include="example2.txt" />
     </ItemGroup>
 
 </Project>
