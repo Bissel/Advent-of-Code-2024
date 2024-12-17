@@ -3,7 +3,7 @@
 open System
 open AdventOfCode
 
-type Operand = int
+type Operand = uint64
 
 type Instruction =
     | Adv
@@ -16,9 +16,9 @@ type Instruction =
     | Cdv
 
 type InstructionCounter = int
-type RegisterA = int
-type RegisterB = int
-type RegisterC = int
+type RegisterA = uint64
+type RegisterB = uint64
+type RegisterC = uint64
 
 type Program = (Instruction*Operand) list
 
@@ -32,30 +32,29 @@ module Program =
     let rec fromInput (input: int list) : Program =
         match input with
             | [] -> []
-            | 0 :: a :: tail -> (Adv, a) :: fromInput tail
-            | 1 :: a :: tail -> (Bxl, a) :: fromInput tail
-            | 2 :: a :: tail -> (Bst, a) :: fromInput tail
-            | 3 :: a :: tail -> (Jnz, a) :: fromInput tail
-            | 4 :: a :: tail -> (Bxc, a) :: fromInput tail
-            | 5 :: a :: tail -> (Out, a) :: fromInput tail
-            | 6 :: a :: tail -> (Bdv, a) :: fromInput tail
-            | 7 :: a :: tail -> (Cdv, a) :: fromInput tail
-            | _ :: tail -> failwith "invalid input"
+            | 0 :: a :: tail -> (Adv, (uint64 a)) :: fromInput tail
+            | 1 :: a :: tail -> (Bxl, (uint64 a)) :: fromInput tail
+            | 2 :: a :: tail -> (Bst, (uint64 a)) :: fromInput tail
+            | 3 :: a :: tail -> (Jnz, (uint64 a)) :: fromInput tail
+            | 4 :: a :: tail -> (Bxc, (uint64 a)) :: fromInput tail
+            | 5 :: a :: tail -> (Out, (uint64 a)) :: fromInput tail
+            | 6 :: a :: tail -> (Bdv, (uint64 a)) :: fromInput tail
+            | 7 :: a :: tail -> (Cdv, (uint64 a)) :: fromInput tail
+            | _ :: _ -> failwith "invalid input"
     
 module State =
-    let ic ((ic,_,_,_,_): State): int = ic
-    let regA ((_,a,_,_,_): State): int = a
-    let regB ((_,_,b,_,_): State): int = b
-    let regC ((_,_,_,c,_): State): int = c
+    let ic   ((c,_,_,_,_): State): InstructionCounter = c
+    let regA ((_,a,_,_,_): State): RegisterA = a
+    let regB ((_,_,b,_,_): State): RegisterB = b
+    let regC ((_,_,_,c,_): State): RegisterC = c
+    let out  ((_,_,_,_,o): State): string list = o
     
-    let out ((_,_,_,_,o): State): string list = o
-    
-    let comboOp (state: State) (operand: Operand): int =
-        match operand with
-            | 0 -> 0
-            | 1 -> 1
-            | 2 -> 2
-            | 3 -> 3
+    let comboOp (state: State) (operand: Operand): uint64 =
+        match int operand with
+            | 0 -> (uint64 0)
+            | 1 -> (uint64 1)
+            | 2 -> (uint64 2)
+            | 3 -> (uint64 3)
             | 4 -> regA state
             | 5 -> regB state
             | 6 -> regC state
@@ -67,9 +66,9 @@ module State =
         (
             (
                 0,
-                (int input[0]),
-                (int input[1]),
-                (int input[2]),
+                (uint64 input[0]),
+                (uint64 input[1]),
+                (uint64 input[2]),
                 []
             ),
             (input[3] |> _.Split(",") |> Array.map int |> Array.toList |> Program.fromInput)
@@ -77,11 +76,9 @@ module State =
 
 module Instruction =
     let Call (instruction: Instruction, operand: Operand) (state: State) : State =
-        let div (a:int) : int =
-            let opA = State.regA state
-            let opB = pown 2 a
-            int (opA / opB)
-
+        let div (a: uint64): uint64 =
+            (State.regA state) >>> (int a)
+            
         match instruction with
             // Bitwise XOR
             // RegB <- regB XOR literal op
@@ -112,14 +109,14 @@ module Instruction =
                 (
                     (State.ic state) + 1,
                     (State.regA state),
-                    (opB % 8),
+                    (opB % (uint64 8)),
                     (State.regC state),
                     (State.out state)
                 )
             // Jump not equal RegA
             | Jnz ->
-                let condition = (State.regA state) <> 0
-                let ic = if condition then State.literalOp operand else ((State.ic state) + 1)
+                let condition = (State.regA state) <> (uint64 0)
+                let ic = if condition then int (State.literalOp operand) else ((State.ic state) + 1)
                 (
                     ic,
                     (State.regA state),
@@ -129,7 +126,7 @@ module Instruction =
                 )
             // Output
             | Out ->
-                let op = string ((State.comboOp state operand) % 8)
+                let op = string ((State.comboOp state operand) % (uint64 8))
                 (
                     (State.ic state) + 1,
                     (State.regA state),
@@ -165,14 +162,13 @@ module Instruction =
                     (State.out state)
                 )
 
-let inputState, program =
+let data =
     Utilities.getData "./day-17/input.txt" ": "
     |> Seq.map Array.last
     |> Seq.filter ((<>) "")
     |> Seq.toList
-    |> State.fromInput
 
-printfn $"{program}"
+let inputState, program = data |> State.fromInput
 
 let run (inputState: State) (program: Program)=
     let programLength = program.Length
@@ -193,7 +189,40 @@ printfn $"Result 1: {result1}"
 
 // -------------------------------------------------- //
 
-let result2 = "-"
-printfn $"Result 2: {result2}"
+let solveForOutput (progOutput: string): uint64 option =
+    let expectedOutput = progOutput |> String |> _.Split(",") |> Seq.rev |> Seq.map string |> Seq.toList
+
+    let runB (regA: uint64) (solvedList: string list) = seq {
+        let a = regA <<< 3
+        for i in [(uint64 0) .. (uint64 7)] do
+            let state = (0, (a + i), uint64 0, uint64 0, [])
+            let res = State.out (run state program)
+            if res = solvedList then
+                yield (a + i) 
+    }
+
+    let rec runC (programNumbers: string list) (solvedList: string list) (regA: uint64) : uint64 Option =
+        match programNumbers with
+            | [] -> Some regA
+            | head :: tail ->
+                let newSolvedList = List.append solvedList [head]
+                let res = runB regA newSolvedList
+                            |> Seq.map (runC tail newSolvedList)
+                            |> Seq.where _.IsSome
+                            |> Seq.map _.Value
+                            |> Seq.sort
+                            
+                if Seq.length res > 0 then Some (Seq.head res) else None
+                
+    runC expectedOutput [] (uint64 0)
+                
+// uint64 "216584205979245"
+let result2 = solveForOutput (data |> List.last)
+
+let resultVerify = Option.map (fun r ->
+            State.out ( run (0, r, uint64 0, uint64 0, []) program )
+            |> Seq.rev |> String.concat ",")
+
+printfn $"Result 2: {result2} -> {resultVerify result2}"
 
 exit 0

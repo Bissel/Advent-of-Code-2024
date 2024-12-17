@@ -1,0 +1,49 @@
+
+Bst 4  # RegB <- RegA % 8
+Bxl 3  # RegB <- RegB XOR 3
+Cdv 5  # RegC <- RegA / (2 ^ RegB)
+Bxl 5  # RegB <- regB XOR 5
+Adv 3  # RegA <- RegA / (2 ^ 3) = RegA / 8
+Bxc 2  # RegB <- regB XOR RegC
+Out 5  # RegB % 8
+Jnz 0  # RegA <> 0 -> PC = 0
+
+RegA: 00000110
+RegB: 00000011
+RegC: ????????
+
+
+0 -> 
+Jnz: 
+    RegA 00000110
+    RegB ?????011
+    RegC ????????
+Out:
+Bxc:
+    RegA 00000110
+    RegB ?011 | .. | ?100
+    RegC ?000 | .. | ?111
+Adv:
+    RegA 00110xxx
+    RegB ?011 | .. | ?100
+    RegC ?000 | .. | ?111
+Bxl: 
+    RegA 00110xxx
+    RegB ?????011 | ?????100 
+    RegC 00000000
+Cdv:
+    RegA 00000000 | 00000001 | ... | 00000111
+    RegB 00000100 
+    RegC ?
+Bxl:
+    RegA 00000000 | 00000001 | ... | 00000111
+    RegB 00000111 ( XOR 00000011 -> 00000100 ) 
+    RegC ?
+Bst:
+    RegA 00000111
+    RegB 00000111 ( XOR 00000011 -> 00000100 ) 
+    RegC ?
+    
+    
+    
+    
