@@ -1,0 +1,15 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net8.0</TargetFramework>
+        <RootNamespace>day_21</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <Content Include="example.txt" />
+        <None Include="day-21.fsx" />
+        <Content Include="input.txt" />
+    </ItemGroup>
+
+</Project>
