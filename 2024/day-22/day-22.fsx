@@ -61,7 +61,63 @@ printfn $"Result 1: {result1}"
 
 // -------------------------------------------------- //
 
-let result2 = "-"
+let price (secret: int64): int = secret % (int64 10) |> int
+
+let change (lastPrice: int) (currentPrice: int) : int = currentPrice - lastPrice
+
+let doChangesSteps (n: int) (secret: int64): (int*(int*int*int*int)) list =
+    let mutable s = secret
+    let mutable lastPrice = price s
+    let mutable changes = [0; 0; 0; 0]
+    seq {
+        for i in [0 .. n] do
+            s <- (calcSecret s)
+            let currentPrice = price s
+            changes <- (List.tail changes) @ [change lastPrice currentPrice]
+            lastPrice <- currentPrice
+            if i >= 4 then
+                yield (currentPrice, changes)
+    }
+    |> Seq.map (fun (price, [d;c;b;a]) -> (price, (d,c,b,a)))
+    |> Seq.toList
+    
+
+let changes = data
+              |> Seq.map (doChangesSteps 2000)
+              |> Seq.toList
+              |> List.map (fun a ->
+                  a
+                  |> List.where (fun (_, (_,_,_,a)) -> a > 0)
+                  |> List.distinctBy snd
+                )
+
+let firstValueByChange (option: int*int*int*int) =
+    changes
+    |> Seq.map (fun sellerChanges ->
+        let firstValue = sellerChanges |> List.tryFind (fun (_, c) -> c = option )
+        
+        int64 (if firstValue.IsNone then 0 else fst firstValue.Value)
+    )
+    |> Seq.sum
+
+let changeOptions =
+    seq {
+        for a in [1 .. 9] do
+            for b in [-9 .. 9] do
+                for c in [-9 .. 9] do
+                    for d in [-9 .. 9] do
+                        yield (d, c, b, a)
+    }
+    |> Seq.toList
+
+let res = changeOptions
+                    |> Seq.map (fun option -> (option, firstValueByChange option ) )
+                    |> Seq.sortByDescending snd
+                    |> Seq.head
+
+printfn $"{snd res}: {fst res}"
+
+let result2 = snd res
 printfn $"Result 2: {result2}"
 
 exit 0

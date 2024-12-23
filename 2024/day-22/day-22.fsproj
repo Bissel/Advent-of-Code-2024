@@ -7,9 +7,10 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <Content Include="example.txt" />
+        <Content Include="example-1.txt" />
         <Content Include="input.txt" />
         <None Include="day-22.fsx" />
+        <Content Include="example-2.txt" />
     </ItemGroup>
 
 </Project>
